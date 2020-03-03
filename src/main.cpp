@@ -23,15 +23,15 @@ void setup() {
   // Instantiating a FuzzyInput object
   FuzzyInput *distance = new FuzzyInput(1);
   // Instantiating a FuzzySet object
-  FuzzySet *small = new FuzzySet(20, 20, 80, 100);
+  FuzzySet *small = new FuzzySet(20, 20, 100, 150);
   // Including the FuzzySet into FuzzyInput
   distance->addFuzzySet(small);
   // Instantiating a FuzzySet object
-  FuzzySet *safe = new FuzzySet(80, 120, 120, 180);
+  FuzzySet *safe = new FuzzySet(100, 150, 150, 220);
   // Including the FuzzySet into FuzzyInput
   distance->addFuzzySet(safe);
   // Instantiating a FuzzySet object
-  FuzzySet *big = new FuzzySet(150, 180, 180, 220);
+  FuzzySet *big = new FuzzySet(150, 220, 500, 500);
   // Including the FuzzySet into FuzzyInput
   distance->addFuzzySet(big);
   // Including the FuzzyInput into Fuzzy
@@ -112,13 +112,15 @@ void loop() {
   Serial.println(' ');
   //Serial.println(LDR5);
   */
-    
+  // delay(50);
   ////////////////EIXO INFERIRO DO PROJETO 
 
-  if (abs(RIGHT-LEFT)<20){
+  if (abs(RIGHT-LEFT)<40){
     delay(200);
   }
   else if((RIGHT>LEFT) && (tetaeixo>30)){
+    Serial.print("Diferença: ");
+    Serial.println(RIGHT - LEFT);
     fuzzy->setInput(1, RIGHT - LEFT);
     fuzzy->fuzzify();
     passo = fuzzy->defuzzify(1);
@@ -129,6 +131,8 @@ void loop() {
     delay(25);
   }
   else if((LEFT>RIGHT)  && (tetaeixo<100)){
+    Serial.print("Diferença: ");
+    Serial.println(LEFT - RIGHT);
     fuzzy->setInput(1, LEFT - RIGHT);
     fuzzy->fuzzify();
     passo = fuzzy->defuzzify(1);
@@ -145,6 +149,8 @@ void loop() {
     delay(200);
   }
   else if((UP>DOWN) && (angulo<55)){
+    Serial.print("Diferença: ");
+    Serial.println(UP - DOWN);
     fuzzy->setInput(1, UP - DOWN);
     fuzzy->fuzzify();
     passo = fuzzy->defuzzify(1);
@@ -155,6 +161,8 @@ void loop() {
     delay(25);
   }
   else if((DOWN>UP) && (angulo>2)){
+    Serial.print("Diferença: ");
+    Serial.println(DOWN - UP);
     fuzzy->setInput(1, DOWN - UP);
     fuzzy->fuzzify();
     passo = fuzzy->defuzzify(1);
