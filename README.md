@@ -1,0 +1,1 @@
+"# Logica-Fuzzy-Placa-Solar" 
