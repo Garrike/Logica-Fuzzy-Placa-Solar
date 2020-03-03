@@ -5,29 +5,33 @@
 #include "Servo.h" // Inclui a Biblioteca Servo.h 
 #include <Fuzzy.h>
 #define pinLDR A0
-Servo meuservo; // Cria o objeto servo para programação 
-int angulo = 0; // Ajusta o ângulo inicial do Servo 
-float teta=0;
+Servo meuservo1; // Cria o objeto servo para programação
+Servo meuservo2; 
+int angulo=15; // Ajusta o ângulo inicial do Servo na parte superior 
+int tetaeixo=60;//Ajusta o angulo inicial do servo na base 
+float passo=3;
 
 Fuzzy *fuzzy = new Fuzzy();
 
 void setup() {
-  meuservo.attach(13); // Declara o pino do servo rotação horizontal
-  meuservo.attach(12); // Declara pino do servo rotação vertical
+  meuservo1.attach(12); // Declara o pino do servo rotação horizontal
+  meuservo2.attach(13); // Declara pino do servo rotação vertical
   Serial.begin(9600);  // declara o serial do LDR
+  meuservo1.write(tetaeixo);
+  meuservo2.write(angulo);
 
   // Instantiating a FuzzyInput object
   FuzzyInput *distance = new FuzzyInput(1);
   // Instantiating a FuzzySet object
-  FuzzySet *small = new FuzzySet(0, 20, 20, 40);
+  FuzzySet *small = new FuzzySet(20, 20, 80, 100);
   // Including the FuzzySet into FuzzyInput
   distance->addFuzzySet(small);
   // Instantiating a FuzzySet object
-  FuzzySet *safe = new FuzzySet(30, 50, 50, 70);
+  FuzzySet *safe = new FuzzySet(80, 120, 120, 180);
   // Including the FuzzySet into FuzzyInput
   distance->addFuzzySet(safe);
   // Instantiating a FuzzySet object
-  FuzzySet *big = new FuzzySet(60, 80, 80, 80);
+  FuzzySet *big = new FuzzySet(150, 180, 180, 220);
   // Including the FuzzySet into FuzzyInput
   distance->addFuzzySet(big);
   // Including the FuzzyInput into Fuzzy
@@ -36,15 +40,15 @@ void setup() {
   // Instantiating a FuzzyOutput objects
   FuzzyOutput *speed = new FuzzyOutput(1);
   // Instantiating a FuzzySet object
-  FuzzySet *slow = new FuzzySet(0, 10, 10, 20);
+  FuzzySet *slow = new FuzzySet(1, 1, 5, 8);
   // Including the FuzzySet into FuzzyOutput
   speed->addFuzzySet(slow);
   // Instantiating a FuzzySet object
-  FuzzySet *average = new FuzzySet(10, 20, 30, 40);
+  FuzzySet *average = new FuzzySet(5, 8, 8, 10);
   // Including the FuzzySet into FuzzyOutput
   speed->addFuzzySet(average);
   // Instantiating a FuzzySet object
-  FuzzySet *fast = new FuzzySet(30, 40, 40, 50);
+  FuzzySet *fast = new FuzzySet(8, 12, 12, 15);
   // Including the FuzzySet into FuzzyOutput
   speed->addFuzzySet(fast);
   // Including the FuzzyOutput into Fuzzy
@@ -94,44 +98,70 @@ void setup() {
 }
   
 void loop() { 
-  int LDR1 = analogRead(A0);
-  int LDR2 = analogRead(A1);
-  int LDR3 = analogRead(A2);
-  int LDR4 = analogRead(A3);
-  int LDR5 = analogRead(A4);
-  Serial.print(LDR1);
+  int LEFT = analogRead(A0);
+  int UP = analogRead(A1);
+  int DOWN = analogRead(A2);
+  int RIGHT = analogRead(A3);
+  /*Serial.print(LEFT);
   Serial.print(' ');
-  Serial.print(LDR2);
+  Serial.print(UP);
   Serial.print(' ');
-  Serial.print(LDR3);
+  Serial.print(DOWN);
   Serial.print(' ');
-  Serial.print(LDR4);
-  Serial.print(' ');
+  Serial.print(RIGHT);
+  Serial.println(' ');
   //Serial.println(LDR5);
+  */
     
-  // delay(50);
-  if(LDR1<LDR2&&LDR1<LDR3){
-    if(LDR2>LDR3) 
-      fuzzy->setInput(1, abs(LDR2-LDR3));
-      // teta=map(LDR2-LDR3,0,1023,45,90);
-    else 
-      fuzzy->setInput(1, abs(LDR3-LDR2));
-      // map(LDR3-LDR2,0,1023,0,45);
+  ////////////////EIXO INFERIRO DO PROJETO 
+
+  if (abs(RIGHT-LEFT)<20){
+    delay(200);
   }
-  else if(LDR3<LDR1&&LDR3<LDR2){
-    if(LDR2>LDR1) 
-      fuzzy->setInput(1, abs(LDR2-LDR1));
-      // teta=map(LDR2-LDR1,0,1023,135,90);
-    else 
-      fuzzy->setInput(1, abs(LDR1-LDR2));
-      // map(LDR1-LDR2,0,1023,180,135);
+  else if((RIGHT>LEFT) && (tetaeixo>30)){
+    fuzzy->setInput(1, RIGHT - LEFT);
+    fuzzy->fuzzify();
+    passo = fuzzy->defuzzify(1);
+    tetaeixo -= passo;
+    Serial.print("DIREITA: ");
+    Serial.println(passo);
+    meuservo1.write(tetaeixo);
+    delay(25);
   }
-  else Serial.println("erro");
+  else if((LEFT>RIGHT)  && (tetaeixo<100)){
+    fuzzy->setInput(1, LEFT - RIGHT);
+    fuzzy->fuzzify();
+    passo = fuzzy->defuzzify(1);
+    tetaeixo += passo;
+    Serial.print("ESQUERDA: ");
+    Serial.println(passo);
+    meuservo1.write(tetaeixo);
+    delay(25);
+  }
 
-  fuzzy->fuzzify();
+  /////////////EIXO SUPERIOR RESPONSAVEL PELO ANGULO
 
-  teta = fuzzy->defuzzify(1);
-
-  meuservo.write(teta);
-  delay(50);
+  if (abs(UP-DOWN)<20){
+    delay(200);
+  }
+  else if((UP>DOWN) && (angulo<55)){
+    fuzzy->setInput(1, UP - DOWN);
+    fuzzy->fuzzify();
+    passo = fuzzy->defuzzify(1);
+    angulo += passo;
+    Serial.print("UP: ");
+    Serial.println(passo);
+    meuservo2.write(angulo);
+    delay(25);
+  }
+  else if((DOWN>UP) && (angulo>2)){
+    fuzzy->setInput(1, DOWN - UP);
+    fuzzy->fuzzify();
+    passo = fuzzy->defuzzify(1);
+    angulo -= passo;
+    Serial.print("DOWN: ");
+    Serial.println(passo);
+    meuservo2.write(angulo);
+    delay(25);
+  }
 }  
